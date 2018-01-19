@@ -1,0 +1,349 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.4.0.RELEASE</version>
+  </parent>
+  <groupId>com.vn.brainshake</groupId>
+  <artifactId>brainshake-parent</artifactId>
+  <version>1.0</version>
+  <packaging>pom</packaging>
+  <name>Brainshake Parent Project</name>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
+    <thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
+    <junit.version>4.12</junit.version>
+    <logback.version>1.1.7</logback.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jquery.version>2.2.3</jquery.version>
+    <bootstrap.version>3.3.6</bootstrap.version>
+    <lombok.version>1.16.8</lombok.version>
+    <checkstyle.plugin.version>2.17</checkstyle.plugin.version>
+    <failOnViolation>false</failOnViolation>
+    <gmaven.plugin.version>1.0</gmaven.plugin.version>
+    <javax-ws-rs.version>2.0.1</javax-ws-rs.version>
+    <HikariCP.version>2.6.3</HikariCP.version>
+
+    <!-- Jacoco coverage report -->
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <jacoco.plugin.version>0.7.7.201606060606</jacoco.plugin.version>
+    <build.profile.id>dev</build.profile.id>
+    <skip.integration.tests>true</skip.integration.tests>
+    <skip.unit.tests>false</skip.unit.tests>
+    <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+    <sonar.language>java</sonar.language>
+    <sonar.sourceEncoding>${project.build.sourceEncoding}</sonar.sourceEncoding>
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <!-- For JUnit to extract coverage details per test -->
+    <sonar-jacoco-listeners.version>3.2</sonar-jacoco-listeners.version>
+    <!-- Jacoco output file for UTs & ITs -->
+    <jacoco.out.ut.file>jacoco-ut.exec</jacoco.out.ut.file>
+    <jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
+    <!-- jacoco.outputDir can be overridden when running command line using 
+      -Djacoco.outputDir=${WORKSPACE}/target where ${WORKSPACE} is the root directory -->
+    <jacoco.outputDir>${project.build.directory}</jacoco.outputDir>
+    <sonar.jacoco.reportPath>${env.WORKSPACE}/target/${jacoco.out.ut.file}</sonar.jacoco.reportPath>
+    <sonar.jacoco.itReportPath>${env.WORKSPACE}/target/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
+
+  </properties>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.sonar-plugins.java</groupId>
+      <artifactId>sonar-jacoco-listeners</artifactId>
+      <version>${sonar-jacoco-listeners.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>all-tests</id>
+      <properties>
+        <build.profile.id>all-tests</build.profile.id>
+        <!-- All tests are run. -->
+        <skip.integration.tests>false</skip.integration.tests>
+        <skip.unit.tests>false</skip.unit.tests>
+      </properties>
+    </profile>
+    <profile>
+      <id>dev</id>
+    </profile>
+    <profile>
+      <id>integration-test</id>
+      <properties>
+        <!-- Used to locate the profile specific configuration file. -->
+        <build.profile.id>integration-test</build.profile.id>
+        <!-- Only integration tests are run. -->
+        <skip.integration.tests>false</skip.integration.tests>
+        <skip.unit.tests>true</skip.unit.tests>
+      </properties>
+    </profile>
+  </profiles>
+
+  <build>
+    <filters>
+      <filter>../brainshake-parent/profiles/${build.profile.id}/config.properties</filter>
+    </filters>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <!-- States that the plugin's add-test-source goal is executed 
+            at generate-test-sources phase. -->
+          <execution>
+            <id>add-integration-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/test/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.plugin.version}</version>
+        <configuration>
+          <configLocation>../brainshake-parent/check-styles/checkStyle.xml</configLocation>
+          <failOnViolation>${failOnViolation}</failOnViolation>
+          <violationSeverity>error</violationSeverity>
+          <consoleOutput>true</consoleOutput>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.groovy.maven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <version>${gmaven.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>init-git-hooks</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>
+                import java.nio.file.Files
+                import java.nio.file.Path
+                import java.nio.file.StandardCopyOption
+
+                def basePath =
+                pom.basedir.toPath();
+                def hooksSource =
+                basePath.resolve("../brainshake-parent/git-hooks")
+                def gitHooks =
+                basePath.resolve("../.git/hooks")
+
+                hooksSource.toFile().listFiles().each() {
+                Files.copy(it.toPath(), gitHooks.resolve(it.getName()),
+                StandardCopyOption.REPLACE_EXISTING)
+                }
+              </source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>pre-unit-test</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${sonar.jacoco.reportPath}</destFile>
+              <propertyName>surefireArgLine</propertyName>
+              <append>false</append>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-unit-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${sonar.jacoco.reportPath}</dataFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>pre-integration-test</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${sonar.jacoco.itReportPath}</destFile>
+              <propertyName>failsafeArgLine</propertyName>
+              <append>false</append>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-integration-test</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${sonar.jacoco.itReportPath}</dataFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Used for unit tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${surefireArgLine}</argLine>
+          <skipTests>${skip.unit.tests}</skipTests>
+          <excludes>
+            <exclude>**/IT.java</exclude>
+          </excludes>
+          <properties>
+            <property>
+              <name>listener</name>
+              <value>org.sonar.java.jacoco.JUnitListener</value>
+            </property>
+          </properties>
+          <testFailureIgnore>true</testFailureIgnore>
+        </configuration>
+      </plugin>
+      <!-- Used for integration tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>integration-tests</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <argLine>-Xmx1024m -XX:MaxPermSize=512m ${failsafeArgLine}</argLine>
+              <skipTests>${skip.integration.tests}</skipTests>
+              <properties>
+                <property>
+                  <name>listener</name>
+                  <value>org.sonar.java.jacoco.JUnitListener</value>
+                </property>
+              </properties>
+              <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings 
+          only. It has no influence on the Maven build itself. -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.codehaus.groovy.maven
+                    </groupId>
+                    <artifactId>
+                      gmaven-plugin
+                    </artifactId>
+                    <versionRange>
+                      [1.0,)
+                    </versionRange>
+                    <goals>
+                      <goal>execute</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.plugin.version}</version>
+        <configuration>
+          <configLocation>../brainshake-parent/check-styles/checkStyle.xml</configLocation>
+          <failOnViolation>${failOnViolation}</failOnViolation>
+          <violationSeverity>error</violationSeverity>
+          <consoleOutput>true</consoleOutput>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  <modules>
+  	<module>../brainshake-rest</module>
+  	<module>../brainshake-service</module>
+  	<module>../brainshake-common</module>
+  	
+  	<module>../brainshake-web</module>
+  	<module>../brainshake-domain</module>
+  </modules>
+</project>
